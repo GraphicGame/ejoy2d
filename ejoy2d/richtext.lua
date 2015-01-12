@@ -75,7 +75,7 @@ local gap = 4
 local CTL_CODE_POP=0
 local CTL_CODE_COLOR=1
 local CTL_CODE_LINEFEED=2
-local CLT_CODE_ANIM=3
+local CLT_CODE_SPRITE=3
 
 M.operates = {
 	yellow      =   {val=0xFFFFFF00,type="color"},
@@ -84,7 +84,7 @@ M.operates = {
 	green       =   {val=0xFF00FF00,type="color"},
 	stop        =   {type=CTL_CODE_POP},
 	lf          =   {type=CTL_CODE_LINEFEED},
-    anim        =   {type=CLT_CODE_ANIM},
+    sprite      =   {type=CLT_CODE_SPRITE},
 }
 
 
@@ -122,13 +122,13 @@ function M:format(label, txt)
 		if not operate then
 			txt = string.gsub(txt, "(#%[%w+%])", "", 1)
 		else
-            if operate.type == CLT_CODE_ANIM and i < tag_cnt then
+            if operate.type == CLT_CODE_SPRITE and i < tag_cnt then
                 local tmp_txt = string.gsub(txt, "(#%[%w+%])", "", 1)
                 local ts, te = string.find(tmp_txt, "(#%[%w+%])")
 
-                local anim_txt = string.sub(tmp_txt, s, ts - 1)
+                local sprite_txt = string.sub(tmp_txt, s, ts - 1)
                 local sprite_field = {}
-                string.gsub(anim_txt, "[%w_]+", function(pattern)
+                string.gsub(sprite_txt, "[%w_]+", function(pattern)
                     table.insert(sprite_field, pattern) end)
 
                 local len = #sprite_field
@@ -142,7 +142,7 @@ function M:format(label, txt)
                         local sprite = ej.sprite(pack, name)
                         local field= {
                             s - 1 + (index - 2), 0,
-                            CLT_CODE_ANIM,
+                            CLT_CODE_SPRITE,
                             sprite,
                         }
                         local aabb = {sprite:aabb()}
@@ -282,7 +282,7 @@ function M:layout(label, txt, fields, sprite_fields)
     local i = 3
     for i = 3, size_cnt, gap do
 		local idx = i
-        local anim_height = 0
+        local sprite_height = 0
         local is_char_esc = is_esc(char_unicode(idx))
 
         pre_char_idx = char_idx
@@ -298,7 +298,7 @@ function M:layout(label, txt, fields, sprite_fields)
 
                 if field[1] == pre_char_idx - 1 then
                     line_width = line_width + w
-                    anim_height = math.max(anim_height, h)
+                    sprite_height = math.max(sprite_height, h)
                     sprite_field_index = sprite_field_index + 1
                 end
             end
@@ -320,7 +320,7 @@ function M:layout(label, txt, fields, sprite_fields)
         if is_char_esc then
             cur_height = 0
         else
-            cur_height = math.max(anim_height, char_height(idx))
+            cur_height = math.max(sprite_height, char_height(idx))
         end
 
 		--reset if \n
